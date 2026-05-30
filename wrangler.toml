@@ -1,0 +1,9 @@
+name = "badri-portfolio"
+compatibility_date = "2026-05-30"
+
+[assets]
+directory = "./dist"
+
+# npm run build
+#wrangler deploy --config dist/server/wrangler.json
+#wrangler deploy --config dist\server\wrangler.json

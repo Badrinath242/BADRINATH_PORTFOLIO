@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Bot } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -6,21 +6,52 @@ import { answerAI } from "@/lib/portfolio-data";
 
 interface Msg { role: "user" | "bot"; text: string }
 
-const suggestionsEN = [
+const SUGGESTION_SLOTS = 6;
+
+function normalizeQuestion(s: string) {
+  return s.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+/** Ordered pool: first unused items fill the chip row (max SUGGESTION_SLOTS). */
+const allSuggestionsEN = [
   "What technologies does he specialize in?",
   "Tell me about his Nokia experience.",
   "What projects has he built?",
   "Is he open to relocation?",
   "What backend technologies does he use?",
   "What roles is he targeting?",
+  "Does he have cloud or Kubernetes experience?",
+  "How does he approach system design?",
+  "What's his education background?",
+  "Has he worked with microservices?",
+  "What programming languages does he use most?",
+  "What's his experience with databases?",
+  "Tell me about his AI or ML experience.",
+  "What certifications does he hold?",
+  "How can I contact him for an interview?",
+  "What industries has he worked in?",
+  "What's his leadership or mentoring experience?",
+  "Does he contribute to open source?",
 ];
-const suggestionsDE = [
+const allSuggestionsDE = [
   "Auf welche Technologien ist er spezialisiert?",
   "Erzähle mir von seiner Nokia-Erfahrung.",
   "Welche Projekte hat er gebaut?",
   "Ist er offen für einen Umzug?",
   "Welche Backend-Technologien nutzt er?",
   "Welche Rollen sucht er?",
+  "Hat er Erfahrung mit Cloud oder Kubernetes?",
+  "Wie geht er an Systemdesign heran?",
+  "Was ist sein Bildungshintergrund?",
+  "Hat er mit Microservices gearbeitet?",
+  "Welche Programmiersprachen nutzt er am meisten?",
+  "Wie ist seine Datenbank-Erfahrung?",
+  "Erzähl mir von seiner KI- oder ML-Erfahrung.",
+  "Welche Zertifizierungen hat er?",
+  "Wie kann ich ihn für ein Interview kontaktieren?",
+  "In welchen Branchen hat er gearbeitet?",
+  "Wie sieht seine Führungs- oder Mentoring-Erfahrung aus?",
+  "Trägt er zu Open Source bei?",
 ];
 
 export function AIAssistant() {
@@ -34,13 +65,22 @@ export function AIAssistant() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, open]);
 
+  const askedNormalized = useMemo(
+    () => new Set(messages.filter((m) => m.role === "user").map((m) => normalizeQuestion(m.text))),
+    [messages],
+  );
+
+  const pool = lang === "de" ? allSuggestionsDE : allSuggestionsEN;
+  const visibleSuggestions = useMemo(
+    () => pool.filter((s) => !askedNormalized.has(normalizeQuestion(s))).slice(0, SUGGESTION_SLOTS),
+    [pool, askedNormalized],
+  );
+
   const ask = (q: string) => {
     if (!q.trim()) return;
     setMessages((m) => [...m, { role: "user", text: q }, { role: "bot", text: answerAI(q) }]);
     setInput("");
   };
-
-  const suggestions = lang === "de" ? suggestionsDE : suggestionsEN;
 
   return (
     <>
@@ -63,7 +103,7 @@ export function AIAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-40 w-[calc(100%-3rem)] sm:w-96 h-[32rem] glass rounded-3xl shadow-elegant flex flex-col overflow-hidden"
+            className="fixed bottom-6 right-6 z-40 w-[calc(100%-3rem)] sm:w-96 h-[32rem] rounded-3xl border border-border bg-card text-card-foreground shadow-elegant flex flex-col overflow-hidden"
           >
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-2">
@@ -80,7 +120,7 @@ export function AIAssistant() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm ${m.role === "user" ? "gradient-bg text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
@@ -88,17 +128,26 @@ export function AIAssistant() {
                   </div>
                 </div>
               ))}
-              {messages.length <= 1 && (
-                <div className="space-y-2 pt-2">
-                  {suggestions.map((s) => (
-                    <button key={s} onClick={() => ask(s)} className="block w-full text-left text-xs px-3 py-2 rounded-xl border border-border hover:bg-accent transition">
+              <div ref={endRef} />
+            </div>
+
+            {visibleSuggestions.length > 0 && (
+              <div className="shrink-0 border-t border-border bg-muted/40 px-3 py-2.5">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground mb-2">{t("ai.suggestions")}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {visibleSuggestions.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => ask(s)}
+                      className="text-left text-xs leading-snug px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-accent transition"
+                    >
                       {s}
                     </button>
                   ))}
                 </div>
-              )}
-              <div ref={endRef} />
-            </div>
+              </div>
+            )}
 
             <form
               onSubmit={(e) => { e.preventDefault(); ask(input); }}

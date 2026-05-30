@@ -105,6 +105,11 @@
   }
   body {
     background-color: var(--color-background);
+    background-image: var(--gradient-hero),
+      linear-gradient(to right, color-mix(in oklab, var(--border) 42%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--border) 42%, transparent) 1px, transparent 1px);
+    background-size: auto, 44px 44px, 44px 44px;
+    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -145,5 +150,14 @@
       linear-gradient(to right, color-mix(in oklab, var(--border) 50%, transparent) 1px, transparent 1px),
       linear-gradient(to bottom, color-mix(in oklab, var(--border) 50%, transparent) 1px, transparent 1px);
     background-size: 48px 48px;
+  }
+  /** Full-viewport shell: same layers as body for routes that need their own stacking context */
+  .page-background {
+    background-color: var(--color-background);
+    background-image: var(--gradient-hero),
+      linear-gradient(to right, color-mix(in oklab, var(--border) 42%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--border) 42%, transparent) 1px, transparent 1px);
+    background-size: auto, 44px 44px, 44px 44px;
+    background-attachment: fixed;
   }
 }

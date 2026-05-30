@@ -137,6 +137,7 @@ const en: Dict = {
   "ai.title": "Ask About Badrinath",
   "ai.placeholder": "Ask a question...",
   "ai.send": "Send",
+  "ai.suggestions": "Try asking",
 };
 
 const de: Dict = {
@@ -272,6 +273,7 @@ const de: Dict = {
   "ai.title": "Frag über Badrinath",
   "ai.placeholder": "Stell eine Frage...",
   "ai.send": "Senden",
+  "ai.suggestions": "Vorschläge",
 };
 
 const dictionaries: Record<Lang, Dict> = { en, de };

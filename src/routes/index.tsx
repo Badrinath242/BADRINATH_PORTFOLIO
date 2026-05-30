@@ -55,7 +55,7 @@ function Index() {
   return (
     <ThemeProvider>
       <I18nProvider>
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen text-foreground">
           <Navbar onRecruiter={() => setRecruiter(true)} />
           <main>
             <Hero />
